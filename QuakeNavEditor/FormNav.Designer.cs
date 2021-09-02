@@ -58,6 +58,9 @@ namespace QuakeNavEditor
             this.toolStripButtonShowNodes = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonShowLinks = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonShowEdicts = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripButtonReload = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonAutoReload = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -265,7 +268,10 @@ namespace QuakeNavEditor
             this.toolStripButtonShowNodeIds,
             this.toolStripButtonShowNodes,
             this.toolStripButtonShowLinks,
-            this.toolStripButtonShowEdicts});
+            this.toolStripButtonShowEdicts,
+            this.toolStripSeparator3,
+            this.toolStripButtonReload,
+            this.toolStripButtonAutoReload});
             this.toolStrip.Location = new System.Drawing.Point(0, 24);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(742, 25);
@@ -360,6 +366,31 @@ namespace QuakeNavEditor
             this.toolStripButtonShowEdicts.Size = new System.Drawing.Size(23, 22);
             this.toolStripButtonShowEdicts.Text = "Show edicts";
             this.toolStripButtonShowEdicts.Click += new System.EventHandler(this.toolStripButtonShowEdicts_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripButtonReload
+            // 
+            this.toolStripButtonReload.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonReload.Image = global::QuakeNavEditor.Properties.Resources.Refresh_16x;
+            this.toolStripButtonReload.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonReload.Name = "toolStripButtonReload";
+            this.toolStripButtonReload.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonReload.Text = "Reload file";
+            this.toolStripButtonReload.Click += new System.EventHandler(this.toolStripButtonReload_Click);
+            // 
+            // toolStripButtonAutoReload
+            // 
+            this.toolStripButtonAutoReload.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonAutoReload.Image = global::QuakeNavEditor.Properties.Resources.RefreshServer_16x;
+            this.toolStripButtonAutoReload.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonAutoReload.Name = "toolStripButtonAutoReload";
+            this.toolStripButtonAutoReload.Size = new System.Drawing.Size(23, 22);
+            this.toolStripButtonAutoReload.Text = "Automatic reload";
+            this.toolStripButtonAutoReload.Click += new System.EventHandler(this.toolStripButtonAutoReload_Click);
             // 
             // saveFileDialog
             // 
@@ -602,5 +633,8 @@ namespace QuakeNavEditor
         private System.Windows.Forms.ToolStripMenuItem addToPatchToolStripMenuItemLink;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem deleteLinksToolStripMenuItemLink;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripButton toolStripButtonReload;
+        private System.Windows.Forms.ToolStripButton toolStripButtonAutoReload;
     }
 }

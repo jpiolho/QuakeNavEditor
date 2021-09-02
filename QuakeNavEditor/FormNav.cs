@@ -25,6 +25,8 @@ namespace QuakeNavEditor
         private FormPatch _patch;
         private NavPatches _patches;
 
+        private FileSystemWatcher _fswatcher;
+
 
         private string filename;
 
@@ -42,11 +44,7 @@ namespace QuakeNavEditor
         {
             if(!string.IsNullOrEmpty(filename))
             {
-                NavFile nav;
-                using (var fs = new FileStream(filename, FileMode.Open))
-                    nav = await NavFile.LoadFromStreamAsync(fs);
-
-                this._nav = nav;
+                this._nav = await LoadNavAsync(filename);
             }
             else
             {
@@ -72,6 +70,15 @@ namespace QuakeNavEditor
 
 
             PopulateNodes();
+        }
+
+        private async Task<NavFile> LoadNavAsync(string filename)
+        {
+            NavFile nav;
+            using (var fs = new FileStream(filename, FileMode.Open))
+                nav = await NavFile.LoadFromStreamAsync(fs);
+
+            return nav;
         }
 
         private void PopulateNodes()
@@ -489,6 +496,70 @@ namespace QuakeNavEditor
         private async void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await SaveAsAsync();
+        }
+
+        private async void toolStripButtonReload_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(filename))
+                return;
+
+            int maxTries = 5;
+            for (var i = 0; i < maxTries; i++) {
+                try
+                {
+                    this._navPreview.Nav = this._nav = await LoadNavAsync(filename);
+                    break;
+                }
+                catch (IOException)
+                {
+                    if (i < maxTries - 1)
+                        await Task.Delay(TimeSpan.FromSeconds(250));
+                    else
+                        throw;
+                }
+            }
+
+            PopulateNodes();
+            _navPreview.Render();
+        }
+
+
+        
+        private void toolStripButtonAutoReload_Click(object sender, EventArgs e)
+        {
+            if(!toolStripButtonAutoReload.Checked)
+            {
+                if (string.IsNullOrEmpty(filename))
+                    return;
+
+                toolStripButtonAutoReload.Checked = true;
+
+                _fswatcher = new FileSystemWatcher();
+                _fswatcher.NotifyFilter = NotifyFilters.LastWrite;
+                _fswatcher.Path = Path.GetDirectoryName(filename);
+                _fswatcher.Changed += FileSystemWatcher_Changed;
+                _fswatcher.EnableRaisingEvents = true;
+            }
+            else
+            {
+                _fswatcher.EnableRaisingEvents = false;
+                _fswatcher.Changed -= FileSystemWatcher_Changed;
+                _fswatcher.Dispose();
+                _fswatcher = null;
+
+                toolStripButtonAutoReload.Checked = false;
+            }
+
+        }
+
+        private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
+        {
+            // Only react to the current nav changing
+            if(e.FullPath == filename)
+            {
+                // Invoke to make sure it runs on the correct thread
+                this.Invoke((MethodInvoker)delegate { toolStripButtonReload_Click(sender, EventArgs.Empty); });
+            }
         }
     }
 }
