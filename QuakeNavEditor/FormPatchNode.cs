@@ -1,13 +1,7 @@
-﻿using QuakeNavEditor.Nav;
-using QuakeNavEditor.Patches;
+﻿using QuakeNavEditor.Patches;
+using QuakeNavSharp.Navigation;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace QuakeNavEditor
@@ -16,38 +10,35 @@ namespace QuakeNavEditor
     {
         public NavPatch[] Patches { get; private set; }
 
-        private NavFile _nav;
-        private int _nodeId;
 
-        public FormPatchNode(NavFile nav, int nodeId)
+        private NavigationGraph.Node _node;
+
+        public FormPatchNode(NavigationGraph.Node node)
         {
             InitializeComponent();
 
-            _nav = nav;
-            _nodeId = nodeId;
+            _node = node;
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
             var patches = new List<NavPatch>();
 
-            var node = _nav.Nodes[_nodeId];
-
             if (checkBoxFlags.Checked)
             {
                 patches.Add(new NodeFlagsNavPatch()
                 {
-                    Node = node.Position,
-                    Flags = node.Flags
+                    Node = _node.Origin,
+                    Flags = _node.Flags
                 });
             }
 
-            if(checkBoxRadius.Checked)
+            if (checkBoxRadius.Checked)
             {
                 patches.Add(new NodeRadiusNavPatch()
                 {
-                    Node = node.Position,
-                    Radius = node.Radius
+                    Node = _node.Origin,
+                    Radius = _node.Radius
                 });
             }
 

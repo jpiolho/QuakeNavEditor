@@ -1,14 +1,7 @@
-﻿using QuakeNavEditor.Nav;
-using QuakeNavEditor.Patches;
+﻿using QuakeNavEditor.Patches;
+using QuakeNavSharp.Navigation;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace QuakeNavEditor
@@ -16,15 +9,15 @@ namespace QuakeNavEditor
     public partial class FormPatch : Form
     {
         private NavPatches _patches;
-        private NavFile _nav;
+        private NavigationGraph _nav;
 
-        public FormPatch(NavFile nav,NavPatches patches)
+        public FormPatch(NavigationGraph nav, NavPatches patches)
         {
             InitializeComponent();
 
             _nav = nav;
             _patches = patches;
-            
+
             _patches.OnPatchesChanged += OnPatchesChanged;
         }
 
@@ -38,7 +31,7 @@ namespace QuakeNavEditor
             listBox.Items.Clear();
 
             var patches = _patches.Patches;
-            for(var i=0;i<patches.Count;i++)
+            for (var i = 0; i < patches.Count; i++)
             {
                 listBox.Items.Add(patches[i].PatchDescription);
             }
@@ -86,9 +79,9 @@ namespace QuakeNavEditor
             {
                 _patches.Apply(_nav);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                MessageBox.Show($"The following error occured:\n{ex.GetType().Name}: {ex.Message}","Failed to apply patch");
+                MessageBox.Show($"The following error occured:\n{ex.GetType().Name}: {ex.Message}", "Failed to apply patch");
                 return;
             }
 
@@ -116,9 +109,9 @@ namespace QuakeNavEditor
             if (form.ShowDialog() == DialogResult.OK)
             {
                 // Add or insert
-                if(listBox.SelectedIndex >= 0)
-                    _patches.InsertPatches(listBox.SelectedIndex,new CommentNavPatch() { Comment = form.Comment });
-                else    
+                if (listBox.SelectedIndex >= 0)
+                    _patches.InsertPatches(listBox.SelectedIndex, new CommentNavPatch() { Comment = form.Comment });
+                else
                     _patches.AddPatches(new CommentNavPatch() { Comment = form.Comment });
             }
         }

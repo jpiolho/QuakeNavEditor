@@ -1,5 +1,5 @@
 ﻿using QuakeNavEditor.Extensions;
-using QuakeNavEditor.Nav;
+using QuakeNavSharp.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -22,8 +22,8 @@ namespace QuakeNavEditor
         private PointF _camera;
         public PointF Camera { get => _camera; set { _camera = value; Render(); } }
 
-        private NavFile _nav;
-        public NavFile Nav { get => _nav; set { _nav = value; Render(); } }
+        private NavigationGraph _nav;
+        public NavigationGraph Nav { get => _nav; set { _nav = value; Render(); } }
 
 
         private bool _showNodeIds;
@@ -43,8 +43,8 @@ namespace QuakeNavEditor
         private Point moveStartMousePosition;
         private Point moveCursorPosition;
 
-        private int[] _selectedNodes = new int[0];
-        public int[] SelectedNodes { get => _selectedNodes; set { _selectedNodes = value; Render(); } }
+        private IEnumerable<int> _selectedNodes = new int[0];
+        public IEnumerable<int> SelectedNodes { get => _selectedNodes; set { _selectedNodes = value; Render(); } }
 
         public PictureBox PictureBox
         {
@@ -157,7 +157,7 @@ namespace QuakeNavEditor
             // Draw edicts
             if (_showEdicts)
             {
-                foreach (var edict in _nav.Nodes.SelectMany(node => node.OutgoingLinks).Where(link => link.Edict != null).Select(link => link.Edict))
+                foreach (var edict in _nav.Nodes.SelectMany(node => node.Links).Where(link => link.Edict != null).Select(link => link.Edict))
                 {
                     var rectangle = new Rectangle();
 
@@ -184,8 +184,8 @@ namespace QuakeNavEditor
             {
                 for (int nodeId = 0; nodeId < _nav.Nodes.Count; nodeId++)
                 {
-                    NavNode node = _nav.Nodes[nodeId];
-                    var pos = QuakeToPreviewCoords(node.Position);
+                    var node = _nav.Nodes[nodeId];
+                    var pos = QuakeToPreviewCoords(node.Origin);
 
                     // Draw selected
                     if (SelectedNodes.Contains(nodeId))
@@ -203,23 +203,23 @@ namespace QuakeNavEditor
             {
                 for (int nodeId = 0; nodeId < _nav.Nodes.Count; nodeId++)
                 {
-                    NavNode node = _nav.Nodes[nodeId];
-                    var pos = QuakeToPreviewCoords(node.Position);
+                    var node = _nav.Nodes[nodeId];
+                    var pos = QuakeToPreviewCoords(node.Origin);
 
-                    foreach (var link in node.OutgoingLinks)
+                    foreach (var link in node.Links)
                     {
-                        var targetNode = _nav.Nodes[link.Destination];
-                        var targetPos = QuakeToPreviewCoords(targetNode.Position);
+                        var targetNode = link.Target;
+                        var targetPos = QuakeToPreviewCoords(targetNode.Origin);
 
                         Pen pen;
 
-                        if (link.Type == NavLinkType.Teleport)
+                        if (link.Type == NavigationGraph.LinkType.Teleport)
                             pen = Pens.Purple;
-                        else if (link.Type == NavLinkType.WalkOffLedge)
+                        else if (link.Type == NavigationGraph.LinkType.WalkOffLedge)
                             pen = Pens.Green;
-                        else if (link.Type == NavLinkType.BarrierJump || link.Type == NavLinkType.ManualJump)
+                        else if (link.Type == NavigationGraph.LinkType.BarrierJump || link.Type == NavigationGraph.LinkType.ManualJump)
                             pen = Pens.Blue;
-                        else if (targetNode.OutgoingLinks.Any(l => l.Destination == nodeId))
+                        else if (targetNode.Links.Any(l => l.Target.Id == nodeId))
                             pen = Pens.White;
                         else
                             pen = Pens.Cyan;
@@ -234,7 +234,7 @@ namespace QuakeNavEditor
             {
                 foreach (var node in _nav.Nodes)
                 {
-                    var pos = QuakeToPreviewCoords(node.Position);
+                    var pos = QuakeToPreviewCoords(node.Origin);
 
                     gfx.FillEllipse(Brushes.Cyan, pos.X - (NodeSize / 2f), pos.Y - (NodeSize / 2f), NodeSize, NodeSize);
                 }
@@ -247,8 +247,8 @@ namespace QuakeNavEditor
                 using (var font = new Font("Calibri", 12f))
                     for (int i = 0; i < _nav.Nodes.Count; i++)
                     {
-                        NavNode node = _nav.Nodes[i];
-                        var pos = QuakeToPreviewCoords(node.Position);
+                        var node = _nav.Nodes[i];
+                        var pos = QuakeToPreviewCoords(node.Origin);
 
                         var id = i.ToString();
                         var measure = gfx.MeasureString(id, font);

@@ -1,6 +1,6 @@
-﻿using QuakeNavEditor.Nav;
-using QuakeNavEditor.Patches;
+﻿using QuakeNavEditor.Patches;
 using QuakeNavEditor.Patches.Link;
+using QuakeNavSharp.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,41 +18,33 @@ namespace QuakeNavEditor
         public NavPatch[] Patches { get; private set; }
 
 
-        private NavFile _nav;
-        private int _nodeId;
-        private int _linkId;
+        private NavigationGraph.Link _link;
 
-        public FormPatchLink(NavFile nav, int nodeId, int linkId)
+        public FormPatchLink(NavigationGraph.Link link)
         {
             InitializeComponent();
 
-            _nav = nav;
-            _nodeId = nodeId;
-            _linkId = linkId;
+            _link = link;
         }
 
         private void FormPatchLink_Load(object sender, EventArgs e)
         {
-            var link = _nav.Nodes[_nodeId].OutgoingLinks[_linkId];
-
-            checkBoxEdict.Enabled = link.Edict != null;
-            checkBoxTraversal.Enabled = link.Traversal != null;
+            checkBoxEdict.Enabled = _link.Edict != null;
+            checkBoxTraversal.Enabled = _link.Traversal != null;
         }
 
         private void buttonAdd_Click(object sender, EventArgs e)
         {
             var patches = new List<NavPatch>();
 
-            var node = _nav.Nodes[_nodeId];
-            var link = node.OutgoingLinks[_linkId];
 
             if (checkBoxType.Checked)
             {
                 patches.Add(new LinkTypeNavPatch()
                 {
-                    Node = node.Position,
-                    DestinationNode = _nav.Nodes[link.Destination].Position,
-                    Type = link.Type
+                    Node = _link.Node.Origin,
+                    DestinationNode = _link.Target.Origin,
+                    Type = _link.Type
                 });
             }
 
@@ -60,14 +52,14 @@ namespace QuakeNavEditor
             {
                 patches.Add(new LinkEdictNavPatch()
                 {
-                    Node = node.Position,
-                    DestinationNode = _nav.Nodes[link.Destination].Position,
-                    Edict = new NavLinkEdict()
+                    Node = _link.Node.Origin,
+                    DestinationNode = _link.Target.Origin,
+                    Edict = new NavigationGraph.Edict()
                     {
-                        Mins = link.Edict.Mins,
-                        Maxs = link.Edict.Maxs,
-                        Classname = link.Edict.Classname,
-                        Targetname = link.Edict.Targetname
+                        Mins = _link.Edict.Mins,
+                        Maxs = _link.Edict.Maxs,
+                        Classname = _link.Edict.Classname,
+                        Targetname = _link.Edict.Targetname
                     }
                 });
             }
@@ -76,13 +68,13 @@ namespace QuakeNavEditor
             {
                 patches.Add(new LinkTraversalNavPatch()
                 {
-                    Node = node.Position,
-                    DestinationNode = _nav.Nodes[link.Destination].Position,
-                    Traversal = new NavLinkTraversal()
+                    Node = _link.Node.Origin,
+                    DestinationNode = _link.Target.Origin,
+                    Traversal = new NavigationGraph.Traversal()
                     {
-                        NodeExit = link.Traversal.NodeExit,
-                        JumpStart = link.Traversal.JumpStart,
-                        JumpEnd = link.Traversal.JumpEnd
+                        Point1 = _link.Traversal.Point1,
+                        Point2 = _link.Traversal.Point2,
+                        Point3 = _link.Traversal.Point3
                     }
                 });
             }

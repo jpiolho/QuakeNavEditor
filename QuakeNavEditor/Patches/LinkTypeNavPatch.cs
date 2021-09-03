@@ -1,12 +1,5 @@
-﻿using QuakeNavEditor.Extensions;
-using QuakeNavEditor.Nav;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using QuakeNavSharp.Navigation;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace QuakeNavEditor.Patches.Link
 {
@@ -17,10 +10,10 @@ namespace QuakeNavEditor.Patches.Link
         [JsonIgnore]
         public override string PatchDescription => $"{base.PatchDescription} set type to {Type}";
 
-        public NavLinkType Type { get; set; }
+        public NavigationGraph.LinkType Type { get; set; }
 
 
-        public override void Apply(NavFile nav)
+        public override void Apply(NavigationGraph nav)
         {
             var link = GetLink(nav);
             link.Type = Type;

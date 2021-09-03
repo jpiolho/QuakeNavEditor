@@ -1,12 +1,10 @@
-﻿using QuakeNavEditor.Nav;
-using QuakeNavEditor.Serializers;
+﻿using QuakeNavEditor.Serializers;
+using QuakeNavSharp.Navigation;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace QuakeNavEditor.Patches
 {
@@ -21,7 +19,7 @@ namespace QuakeNavEditor.Patches
             _jsonSerializerOptions.Converters.Add(new Vector3JsonConverter());
 
             _patchTypes = new Dictionary<string, Type>();
-            foreach(var type in typeof(NavPatch).Assembly.GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(NavPatch))))
+            foreach (var type in typeof(NavPatch).Assembly.GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(NavPatch))))
             {
                 var patch = (NavPatch)Activator.CreateInstance(type);
                 _patchTypes[patch.PatchId] = type;
@@ -43,14 +41,14 @@ namespace QuakeNavEditor.Patches
             OnPatchesChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public void InsertPatches(int index, params NavPatch[] patches) => InsertPatches(index,patches.AsEnumerable());
+        public void InsertPatches(int index, params NavPatch[] patches) => InsertPatches(index, patches.AsEnumerable());
         public void InsertPatches(int index, IEnumerable<NavPatch> patches)
         {
             _navPatches.InsertRange(index, patches);
             OnPatchesChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public void Move(int from,int to)
+        public void Move(int from, int to)
         {
             var patch = _navPatches[to];
             _navPatches[to] = _navPatches[from];
@@ -72,9 +70,9 @@ namespace QuakeNavEditor.Patches
             OnPatchesChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        public void Apply(NavFile nav)
+        public void Apply(NavigationGraph nav)
         {
-            foreach(var patch in _navPatches)
+            foreach (var patch in _navPatches)
                 patch.Apply(nav);
         }
 
@@ -84,9 +82,9 @@ namespace QuakeNavEditor.Patches
             {
                 writer.WriteLine("NAV2PATCH");
                 writer.WriteLine("1"); // Version
-            
+
                 foreach (var patch in _navPatches)
-                    writer.WriteLine($"{patch.PatchId}|{JsonSerializer.Serialize(patch,patch.GetType(), _jsonSerializerOptions)}");
+                    writer.WriteLine($"{patch.PatchId}|{JsonSerializer.Serialize(patch, patch.GetType(), _jsonSerializerOptions)}");
             }
         }
 
@@ -94,7 +92,7 @@ namespace QuakeNavEditor.Patches
         {
             _navPatches.Clear();
 
-            using(var reader = new StreamReader(stream))
+            using (var reader = new StreamReader(stream))
             {
                 var magicNumber = reader.ReadLine();
 
@@ -106,7 +104,7 @@ namespace QuakeNavEditor.Patches
                     throw new InvalidDataException($"Unsupported navigation patch version {version}");
 
                 int lineNumber = 1;
-                while(!reader.EndOfStream)
+                while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
 

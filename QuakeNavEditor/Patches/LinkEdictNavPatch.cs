@@ -1,13 +1,6 @@
 ﻿using QuakeNavEditor.Extensions;
-using QuakeNavEditor.Nav;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
+using QuakeNavSharp.Navigation;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace QuakeNavEditor.Patches.Link
 {
@@ -18,14 +11,14 @@ namespace QuakeNavEditor.Patches.Link
         [JsonIgnore]
         public override string PatchDescription => $"{base.PatchDescription} set edict min ({Edict.Mins.ToReadableString(", ")}) maxs ({Edict.Maxs.ToReadableString(", ")}) classname ({Edict.Classname}) targetname ({Edict.Targetname})";
 
-        public NavLinkEdict Edict { get; set; }
+        public NavigationGraph.Edict Edict { get; set; }
 
 
-        public override void Apply(NavFile nav)
+        public override void Apply(NavigationGraph nav)
         {
             var link = GetLink(nav);
 
-            link.Edict = new NavLinkEdict();
+            link.Edict = new NavigationGraph.Edict();
             link.Edict.Mins = Edict.Mins;
             link.Edict.Maxs = Edict.Maxs;
             link.Edict.Classname = Edict.Classname;

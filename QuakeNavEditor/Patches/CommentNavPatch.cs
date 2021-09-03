@@ -1,10 +1,5 @@
-﻿using QuakeNavEditor.Nav;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using QuakeNavSharp.Navigation;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace QuakeNavEditor.Patches
 {
@@ -18,6 +13,6 @@ namespace QuakeNavEditor.Patches
         public string Comment { get; set; }
 
 
-        public override void Apply(NavFile nav) { }
+        public override void Apply(NavigationGraph nav) { }
     }
 }

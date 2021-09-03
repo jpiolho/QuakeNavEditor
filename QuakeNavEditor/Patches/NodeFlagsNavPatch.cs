@@ -1,10 +1,7 @@
-﻿using QuakeNavEditor.Nav;
+﻿using QuakeNavSharp.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace QuakeNavEditor.Patches
 {
@@ -15,32 +12,16 @@ namespace QuakeNavEditor.Patches
         [JsonIgnore]
         public override string PatchDescription => $"{base.PatchDescription} set flags to {GetFlagText()}";
 
-        public NavNodeFlags Flags { get; set; }
+        public NavigationGraph.NodeFlags Flags { get; set; }
 
 
 
         private string GetFlagText()
         {
-            var sb = new StringBuilder();
-            foreach(var flag in Enum.GetValues<NavNodeFlags>())
-            {
-                if (flag == NavNodeFlags.None)
-                    continue;
-
-                // Only append if it has the flag
-                if (Flags.HasFlag(flag))
-                {
-                    if (sb.Length > 0)
-                        sb.Append(", ");
-
-                    sb.Append(flag.ToString());
-                }
-            }
-
-            return sb.ToString();
+            return string.Join(", ", Enum.GetValues<NavigationGraph.NodeFlags>().Where(flag => flag != NavigationGraph.NodeFlags.None));
         }
 
-        public override void Apply(NavFile nav)
+        public override void Apply(NavigationGraph nav)
         {
             var node = GetNode(nav);
             node.Flags = Flags;

@@ -1,4 +1,4 @@
-﻿using QuakeNavEditor.Nav;
+﻿using QuakeNavSharp.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,8 +14,8 @@ namespace QuakeNavEditor
 {
     public partial class FormNodeEdit : Form
     {
-        private NavNode _node;
-        public FormNodeEdit(NavNode node)
+        private NavigationGraph.Node _node;
+        public FormNodeEdit(NavigationGraph.Node node)
         {
             InitializeComponent();
 
@@ -25,13 +25,13 @@ namespace QuakeNavEditor
         private void FormNodeEdit_Load(object sender, EventArgs e)
         {
             // Populate fields
-            vectorBoxPosition.Value = _node.Position;
+            vectorBoxPosition.Value = _node.Origin;
             textBoxRadius.Text = _node.Radius.ToString();
 
             // Populate flags
-            foreach(var value in Enum.GetValues<NavNodeFlags>())
+            foreach(var value in Enum.GetValues<NavigationGraph.NodeFlags>())
             {
-                if (value == NavNodeFlags.None)
+                if (value == NavigationGraph.NodeFlags.None)
                     continue;
 
                 checkedListBoxFlags.Items.Add(value,_node.Flags.HasFlag(value));
@@ -52,12 +52,12 @@ namespace QuakeNavEditor
                 return;
             }
 
-            _node.Position = vectorBoxPosition.Value;
+            _node.Origin = vectorBoxPosition.Value;
             _node.Radius = radius;
 
-            _node.Flags = NavNodeFlags.None;
+            _node.Flags = NavigationGraph.NodeFlags.None;
 
-            foreach (NavNodeFlags item in checkedListBoxFlags.CheckedItems)
+            foreach (NavigationGraph.NodeFlags item in checkedListBoxFlags.CheckedItems)
                 _node.Flags |= item;
 
             this.Close();

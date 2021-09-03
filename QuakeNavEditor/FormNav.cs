@@ -1,5 +1,6 @@
-﻿using QuakeNavEditor.Nav;
-using QuakeNavEditor.Patches;
+﻿using QuakeNavEditor.Patches;
+using QuakeNavSharp.Files;
+using QuakeNavSharp.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +19,7 @@ namespace QuakeNavEditor
 {
     public partial class FormNav : Form
     {
-        private NavFile _nav;
+        private NavigationGraph _nav;
         private NavPreview _navPreview;
 
 
@@ -48,7 +49,7 @@ namespace QuakeNavEditor
             }
             else
             {
-                this._nav = new NavFile();
+                this._nav = new NavigationGraph();
             }
 
 
@@ -72,11 +73,11 @@ namespace QuakeNavEditor
             PopulateNodes();
         }
 
-        private async Task<NavFile> LoadNavAsync(string filename)
+        private async Task<NavigationGraph> LoadNavAsync(string filename)
         {
-            NavFile nav;
+            NavigationGraph nav;
             using (var fs = new FileStream(filename, FileMode.Open))
-                nav = await NavFile.LoadFromStreamAsync(fs);
+                nav = NavigationGraph.FromNavFile(await NavFile.FromStreamAsync(fs));
 
             return nav;
         }
@@ -94,45 +95,43 @@ namespace QuakeNavEditor
             listViewNodes.Enabled = true;
         }
 
-        private void PopulateLinks(int nodeId)
+        private void PopulateLinks(NavigationGraph.Node node)
         {
             listViewLinks.Enabled = false;
             listViewLinks.Items.Clear();
 
 
-            var node = _nav.Nodes[nodeId];
-
-            for (var linkId = 0; linkId < node.OutgoingLinks.Count; linkId++)
-                AddLinkToList(linkId, node.OutgoingLinks[linkId]);
+            for (var linkId = 0; linkId < node.Links.Count; linkId++)
+                AddLinkToList(linkId, node.Links[linkId]);
 
 
 
             listViewLinks.Enabled = true;
         }
 
-        private (int, NavNode)[] GetSelectedNodes()
+        private NavigationGraph.Node[] GetSelectedNodes()
         {
-            var array = new (int, NavNode)[listViewNodes.SelectedItems.Count];
+            var array = new NavigationGraph.Node[listViewNodes.SelectedItems.Count];
 
             for (var i = 0; i < array.Length; i++)
-                array[i] = ((int, NavNode))listViewNodes.SelectedItems[i].Tag;
+                array[i] = (NavigationGraph.Node)listViewNodes.SelectedItems[i].Tag;
 
             return array;
         }
 
-        private (int, NavLink)[] GetSelectedLinks()
+        private NavigationGraph.Link[] GetSelectedLinks()
         {
-            var array = new (int, NavLink)[listViewLinks.SelectedItems.Count];
+            var array = new NavigationGraph.Link[listViewLinks.SelectedItems.Count];
 
             for (var i = 0; i < array.Length; i++)
-                array[i] = ((int, NavLink))listViewLinks.SelectedItems[i].Tag;
+                array[i] = (NavigationGraph.Link)listViewLinks.SelectedItems[i].Tag;
 
             return array;
         }
 
-        private void OnNodesSelected(params (int, NavNode)[] nodes)
+        private void OnNodesSelected(params NavigationGraph.Node[] nodes)
         {
-            _navPreview.SelectedNodes = nodes.Select(n => n.Item1).ToArray();
+            _navPreview.SelectedNodes = nodes.Select(n => n.Id);
 
             // Repopulate the link list
             listViewLinks.Items.Clear();
@@ -142,7 +141,7 @@ namespace QuakeNavEditor
 
             if (nodes.Length == 1)
             {
-                PopulateLinks(nodes[0].Item1);
+                PopulateLinks(nodes[0]);
 
                 toolStripButtonAddLink.Enabled = true;
                 listViewLinks.Enabled = true;
@@ -155,13 +154,13 @@ namespace QuakeNavEditor
 
         }
 
-        private void AddLinkToList(int id, NavLink link)
+        private void AddLinkToList(int id, NavigationGraph.Link link)
         {
             var item = new ListViewItem();
-            item.Tag = (id, link);
+            item.Tag = link;
             item.Text = id.ToString();
 
-            item.SubItems.Add(link.Destination.ToString());
+            item.SubItems.Add(link.Target.Id.ToString());
             item.SubItems.Add(link.Type.ToString());
             item.SubItems.Add(link.Edict != null ? "✅" : "");
             item.SubItems.Add(link.Traversal != null ? "✅" : "");
@@ -169,31 +168,23 @@ namespace QuakeNavEditor
             listViewLinks.Items.Add(item);
         }
 
-        private void AddNodeToList(int id, NavNode node)
+        private void AddNodeToList(int id, NavigationGraph.Node node)
         {
             var item = new ListViewItem();
-            item.Tag = (id, node);
+            item.Tag = node;
             item.Text = id.ToString();
-            item.SubItems.Add(node.Position.X.ToString(CultureInfo.InvariantCulture));
-            item.SubItems.Add(node.Position.Y.ToString(CultureInfo.InvariantCulture));
-            item.SubItems.Add(node.Position.Z.ToString(CultureInfo.InvariantCulture));
+            item.SubItems.Add(node.Origin.X.ToString(CultureInfo.InvariantCulture));
+            item.SubItems.Add(node.Origin.Y.ToString(CultureInfo.InvariantCulture));
+            item.SubItems.Add(node.Origin.Z.ToString(CultureInfo.InvariantCulture));
             item.SubItems.Add(node.Radius.ToString());
 
             var flags = new List<string>();
             if (node.Flags != 0)
             {
-                var flagValues = Enum.GetValues<NavNodeFlags>();
-                var flagNames = Enum.GetNames<NavNodeFlags>();
-
-                for (int flagIndex = 0; flagIndex < flagValues.Length; flagIndex++)
+                foreach(var flag in Enum.GetValues<NavigationGraph.NodeFlags>().Where(flag => flag != NavigationGraph.NodeFlags.None))
                 {
-                    NavNodeFlags value = flagValues[flagIndex];
-
-                    if (value == NavNodeFlags.None)
-                        continue;
-
-                    if (node.Flags.HasFlag(value))
-                        flags.Add(flagNames[flagIndex]);
+                    if (node.Flags.HasFlag(flag))
+                        flags.Add(flag.ToString());
                 }
             }
 
@@ -234,10 +225,10 @@ namespace QuakeNavEditor
         private async Task SaveAsync(string path)
         {
             using (var fs = new FileStream(path, File.Exists(path) ? FileMode.Truncate : FileMode.OpenOrCreate))
-                await _nav.SaveToStreamAsync(fs);
+                await _nav.ToNavFile().SaveAsync(fs);
         }
 
-        private async void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (openFileDialog.ShowDialog() != DialogResult.OK)
                 return;
@@ -262,13 +253,12 @@ namespace QuakeNavEditor
             if (selectedNodes.Length != 1)
                 return;
 
-            EditNode(selectedNodes[0].Item1);
+            EditNode(selectedNodes[0]);
         }
 
         private void toolStripButtonAddNode_Click(object sender, EventArgs e)
         {
-            var newIndex = _nav.Nodes.Count;
-            _nav.Nodes.Add(new NavNode());
+            var newIndex = _nav.NewNode().Id;
 
             PopulateNodes();
 
@@ -282,10 +272,8 @@ namespace QuakeNavEditor
             if (listViewLinks.SelectedItems.Count != 1)
                 return;
 
-            var selectedNode = ((int, NavNode))listViewNodes.SelectedItems[0].Tag;
-            var selectedLink = ((int, NavLink))listViewLinks.SelectedItems[0].Tag;
-
-            EditLink(selectedNode.Item1, selectedLink.Item1);
+            var selectedLink = (NavigationGraph.Link)listViewLinks.SelectedItems[0].Tag;
+            EditLink(selectedLink);
         }
 
         private void toolStripButtonDeleteNode_Click(object sender, EventArgs e)
@@ -296,71 +284,52 @@ namespace QuakeNavEditor
                 return;
 
             // Delete all nodes
-            foreach (var node in selectedNodes.OrderByDescending(n => n.Item1))
-                DeleteNode(node.Item1);
+            foreach (var node in selectedNodes)
+                DeleteNode(node.Id);
 
             OnNodesSelected();
             PopulateNodes();
         }
 
-        private void OnNodeEdited(int nodeId,NavNode node)
+        private void OnNodeEdited(NavigationGraph.Node node)
         {
             PopulateNodes();
 
             // Re-select node
-            listViewNodes.SelectedIndices.Add(nodeId);
-            listViewNodes.Items[nodeId].EnsureVisible();
+            listViewNodes.SelectedIndices.Add(node.Id);
+            listViewNodes.Items[node.Id].EnsureVisible();
         }
 
-        private void OnLinkEdited(int nodeId,int linkId)
+        private void OnLinkEdited(NavigationGraph.Link link)
         {
-            PopulateLinks(nodeId);
+            PopulateLinks(link.Node);
 
             // Re-select link
-            listViewLinks.SelectedIndices.Add(linkId);
-            listViewLinks.Items[linkId].EnsureVisible();
+            listViewLinks.SelectedIndices.Add(link.Id);
+            listViewLinks.Items[link.Id].EnsureVisible();
         }
 
 
-        private void EditNode(int nodeId)
+        private void EditNode(NavigationGraph.Node node)
         {
-            var node = _nav.Nodes[nodeId];
             if (new FormNodeEdit(node).ShowDialog() == DialogResult.OK)
             {
-                OnNodeEdited(nodeId,node);
+                OnNodeEdited(node);
             }
         }
 
-        private void EditLink(int nodeId,int linkId)
+        private void EditLink(NavigationGraph.Link link)
         {
-            var link = _nav.Nodes[nodeId].OutgoingLinks[linkId];
-
             if (new FormLinkEdit(link).ShowDialog() == DialogResult.OK)
             {
-                OnLinkEdited(nodeId, linkId);
+                OnLinkEdited(link);
             }
         }
 
 
+        private void DeleteNode(NavigationGraph.Node node) => DeleteNode(node.Id);
         private void DeleteNode(int nodeId)
         {
-            foreach (var node in _nav.Nodes)
-            {
-                foreach (var link in node.OutgoingLinks.Reverse<NavLink>())
-                {
-                    if (link.Destination == nodeId)
-                    {
-                        // Delete connection
-                        node.OutgoingLinks.Remove(link);
-                    }
-                    else if (link.Destination > nodeId)
-                    {
-                        // Decrement ids by one above the node being deleted, since all node ids are about to shift down
-                        link.Destination--;
-                    }
-                }
-            }
-
             _nav.Nodes.RemoveAt(nodeId);
         }
 
@@ -394,9 +363,9 @@ namespace QuakeNavEditor
 
         private void editToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            var contextNodes = ((int,NavNode)[])contextMenuStripNode.Tag;
+            var selectedNode = GetSelectedNodes()[0];
 
-            EditNode(contextNodes[0].Item1);
+            EditNode(selectedNode);
 
             contextMenuStripNode.Hide();
         }
@@ -421,11 +390,11 @@ namespace QuakeNavEditor
 
         private void deleteNodeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var contextNodes = ((int, NavNode)[])contextMenuStripNode.Tag;
+            var contextNodes = (NavigationGraph.Node[])contextMenuStripNode.Tag;
 
             // Delete all nodes
-            foreach (var node in contextNodes.OrderByDescending(n => n.Item1))
-                DeleteNode(node.Item1);
+            foreach (var node in contextNodes)
+                DeleteNode(node);
 
             OnNodesSelected();
             PopulateNodes();
@@ -462,20 +431,18 @@ namespace QuakeNavEditor
 
         private void editToolStripMenuItemLink_Click(object sender, EventArgs e)
         {
-            var selectedNode = GetSelectedNodes()[0];
             var selectedLink = GetSelectedLinks()[0];
 
-            EditLink(selectedNode.Item1,selectedLink.Item1);
+            EditLink(selectedLink);
 
             contextMenuStripLink.Hide();
         }
 
         private void addToPatchToolStripMenuItemLink_Click(object sender, EventArgs e)
         {
-            var selectedNode = GetSelectedNodes()[0];
             var selectedLink = GetSelectedLinks()[0];
 
-            var form = new FormPatchLink(_nav, selectedNode.Item1, selectedLink.Item1);
+            var form = new FormPatchLink(selectedLink);
             if (form.ShowDialog() == DialogResult.OK)
             {
                 _patches.AddPatches(form.Patches);
@@ -486,7 +453,7 @@ namespace QuakeNavEditor
         {
             var selectedNode = GetSelectedNodes()[0];
 
-            var form = new FormPatchNode(_nav, selectedNode.Item1);
+            var form = new FormPatchNode(selectedNode);
             if (form.ShowDialog() == DialogResult.OK)
             {
                 _patches.AddPatches(form.Patches);

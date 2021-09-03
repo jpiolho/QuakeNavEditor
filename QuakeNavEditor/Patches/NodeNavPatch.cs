@@ -1,5 +1,5 @@
 ﻿using QuakeNavEditor.Extensions;
-using QuakeNavEditor.Nav;
+using QuakeNavSharp.Navigation;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -11,13 +11,13 @@ namespace QuakeNavEditor.Patches
     {
         [JsonIgnore]
         public override string PatchDescription => $"Patch node at ({Node.X.ToString(CultureInfo.InvariantCulture)}, {Node.Y.ToString(CultureInfo.InvariantCulture)}, {Node.Z.ToString(CultureInfo.InvariantCulture)})";
-        
+
         public Vector3 Node { get; set; }
 
 
-        protected NavNode GetNode(NavFile nav)
+        protected NavigationGraph.Node GetNode(NavigationGraph nav)
         {
-            var node = nav.Nodes.FirstOrDefault(node => Vector3.Distance(Node, node.Position) <= 1);
+            var node = nav.Nodes.FirstOrDefault(node => Vector3.Distance(Node, node.Origin) <= 1);
 
             if (node == null)
                 throw new NavPatchException($"Could not find node at ({Node.ToReadableString(", ")})");

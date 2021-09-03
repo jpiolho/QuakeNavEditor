@@ -1,12 +1,6 @@
 ﻿using QuakeNavEditor.Extensions;
-using QuakeNavEditor.Nav;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+using QuakeNavSharp.Navigation;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace QuakeNavEditor.Patches.Link
 {
@@ -15,19 +9,19 @@ namespace QuakeNavEditor.Patches.Link
         [JsonIgnore]
         public override string PatchId => "link_traversal";
         [JsonIgnore]
-        public override string PatchDescription => $"{base.PatchDescription} set traversal to node exit ({Traversal.NodeExit.ToReadableString(", ")}) jump start ({Traversal.JumpStart.ToReadableString(", ")}) jump end ({Traversal.JumpEnd.ToReadableString(", ")})";
+        public override string PatchDescription => $"{base.PatchDescription} set traversal to point1 ({Traversal.Point1.ToReadableString(", ")}) point2 ({Traversal.Point2.ToReadableString(", ")}) point3 ({Traversal.Point3.ToReadableString(", ")})";
 
-        public NavLinkTraversal Traversal { get; set; }
+        public NavigationGraph.Traversal Traversal { get; set; }
 
 
-        public override void Apply(NavFile nav)
+        public override void Apply(NavigationGraph nav)
         {
             var link = GetLink(nav);
 
-            link.Traversal = new NavLinkTraversal();
-            link.Traversal.NodeExit = Traversal.NodeExit;
-            link.Traversal.JumpStart = Traversal.JumpStart;
-            link.Traversal.JumpEnd = Traversal.JumpEnd;
+            link.Traversal = new NavigationGraph.Traversal();
+            link.Traversal.Point1 = Traversal.Point1;
+            link.Traversal.Point2 = Traversal.Point2;
+            link.Traversal.Point3 = Traversal.Point3;
         }
 
     }

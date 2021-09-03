@@ -1,4 +1,4 @@
-﻿using QuakeNavEditor.Nav;
+﻿using QuakeNavSharp.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,8 +13,8 @@ namespace QuakeNavEditor
 {
     public partial class FormLinkEdit : Form
     {
-        private NavLink _link;
-        public FormLinkEdit(NavLink link)
+        private NavigationGraph.Link _link;
+        public FormLinkEdit(NavigationGraph.Link link)
         {
             InitializeComponent();
 
@@ -48,10 +48,10 @@ namespace QuakeNavEditor
         private void FormLinkEdit_Load(object sender, EventArgs e)
         {
             // Populate types
-            foreach (var value in Enum.GetValues<NavLinkType>())
+            foreach (var value in Enum.GetValues<NavigationGraph.LinkType>())
                 comboBoxType.Items.Add(value);
 
-            textBoxDestination.Text = _link.Destination.ToString();
+            textBoxDestination.Text = _link.Target.Id.ToString();
             comboBoxType.SelectedItem = _link.Type;
 
             if (_link.Edict != null)
@@ -72,9 +72,9 @@ namespace QuakeNavEditor
             {
                 checkBoxTraversal.Checked = true;
 
-                vectorBoxNodeExit.Value = _link.Traversal.NodeExit;
-                vectorBoxJumpStart.Value = _link.Traversal.JumpStart;
-                vectorBoxJumpEnd.Value = _link.Traversal.JumpEnd;
+                vectorBoxNodeExit.Value = _link.Traversal.Point1;
+                vectorBoxJumpStart.Value = _link.Traversal.Point2;
+                vectorBoxJumpEnd.Value = _link.Traversal.Point3;
             }
             else
             {
@@ -95,7 +95,7 @@ namespace QuakeNavEditor
             }
 
 
-            NavLinkEdict edict = null;
+            NavigationGraph.Edict edict = null;
             if (checkBoxEdict.Checked)
             {
                 
@@ -123,14 +123,14 @@ namespace QuakeNavEditor
                     return;
                 }
 
-                edict = new NavLinkEdict();
+                edict = new NavigationGraph.Edict();
                 edict.Mins = vectorBoxMins.Value;
                 edict.Maxs = vectorBoxMaxs.Value;
                 edict.Classname = classname;
                 edict.Targetname = targetname;
             }
 
-            NavLinkTraversal traversal = null;
+            NavigationGraph.Traversal traversal = null;
             if(checkBoxTraversal.Checked)
             {
                 if(!vectorBoxNodeExit.IsValid)
@@ -151,14 +151,14 @@ namespace QuakeNavEditor
                     return;
                 }
 
-                traversal = new NavLinkTraversal();
-                traversal.NodeExit = vectorBoxNodeExit.Value;
-                traversal.JumpStart = vectorBoxJumpStart.Value;
-                traversal.JumpEnd = vectorBoxJumpEnd.Value;
+                traversal = new NavigationGraph.Traversal();
+                traversal.Point1 = vectorBoxNodeExit.Value;
+                traversal.Point2 = vectorBoxJumpStart.Value;
+                traversal.Point3 = vectorBoxJumpEnd.Value;
             }
 
-            _link.Destination = destination;
-            _link.Type = (NavLinkType)comboBoxType.SelectedValue;
+            _link.Target = _link.Graph.Nodes[destination];
+            _link.Type = (NavigationGraph.LinkType)comboBoxType.SelectedItem;
             _link.Edict = edict;
             _link.Traversal = traversal;
 

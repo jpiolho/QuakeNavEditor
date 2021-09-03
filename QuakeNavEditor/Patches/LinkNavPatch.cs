@@ -1,14 +1,9 @@
 ﻿using QuakeNavEditor.Extensions;
-using QuakeNavEditor.Nav;
-using System;
-using System.Collections.Generic;
+using QuakeNavSharp.Navigation;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace QuakeNavEditor.Patches
 {
@@ -20,11 +15,11 @@ namespace QuakeNavEditor.Patches
         public Vector3 DestinationNode { get; set; }
 
 
-        protected NavLink GetLink(NavFile nav)
+        protected NavigationGraph.Link GetLink(NavigationGraph nav)
         {
             var node = GetNode(nav);
 
-            var link = node.OutgoingLinks.FirstOrDefault(link => Vector3.Distance(nav.Nodes[link.Destination].Position, DestinationNode) <= 1);
+            var link = node.Links.FirstOrDefault(link => Vector3.Distance(link.Target.Origin, DestinationNode) <= 1);
 
             if (link == null)
                 throw new NavPatchException($"Could not find link from ({Node.ToReadableString(", ")}) towards destination node ({DestinationNode.ToReadableString(", ")})");
