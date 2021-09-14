@@ -486,6 +486,8 @@ namespace QuakeNavEditor
                 }
             }
 
+            _patch?.UpdateNavigationGraph(_nav);
+
             PopulateNodes();
             _navPreview.Render();
         }

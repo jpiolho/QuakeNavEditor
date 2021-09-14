@@ -21,6 +21,11 @@ namespace QuakeNavEditor
             _patches.OnPatchesChanged += OnPatchesChanged;
         }
 
+        public void UpdateNavigationGraph(NavigationGraph nav)
+        {
+            _nav = nav;
+        }
+
         private void OnPatchesChanged(object sender, EventArgs e)
         {
             PopulateList();
