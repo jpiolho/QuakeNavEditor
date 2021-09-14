@@ -530,5 +530,19 @@ namespace QuakeNavEditor
                 this.Invoke((MethodInvoker)delegate { toolStripButtonReload_Click(sender, EventArgs.Empty); });
             }
         }
+
+        private void removeAllTraversalsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to remove all traversals in the nav?", "Remove all traversals", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                return;
+
+            foreach(var link in this._nav.Nodes.SelectMany(n => n.Links))
+            {
+                link.Traversal = null;
+            }
+
+            PopulateNodes();
+            _navPreview.Render();
+        }
     }
 }

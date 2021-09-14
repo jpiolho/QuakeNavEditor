@@ -71,6 +71,8 @@ namespace QuakeNavEditor
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.patchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeAllTraversalsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.contextMenuStripNode = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.editToolStripMenuItemNode = new System.Windows.Forms.ToolStripMenuItem();
@@ -400,7 +402,8 @@ namespace QuakeNavEditor
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.patchToolStripMenuItem});
+            this.patchToolStripMenuItem,
+            this.toolsToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(742, 24);
@@ -424,14 +427,14 @@ namespace QuakeNavEditor
             // 
             this.newNavFileToolStripMenuItem.Name = "newNavFileToolStripMenuItem";
             this.newNavFileToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.newNavFileToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.newNavFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newNavFileToolStripMenuItem.Text = "New";
             this.newNavFileToolStripMenuItem.Click += new System.EventHandler(this.newNavFileToolStripMenuItem_Click);
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.loadToolStripMenuItem.Text = "Load...";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
@@ -439,27 +442,27 @@ namespace QuakeNavEditor
             // 
             this.saveToolStripMenuItem.Image = global::QuakeNavEditor.Properties.Resources.Save_16x;
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
-            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveAsToolStripMenuItem.Text = "Save As...";
             this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(138, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
             // 
             // quitToolStripMenuItem
             // 
             this.quitToolStripMenuItem.Name = "quitToolStripMenuItem";
             this.quitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.quitToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.quitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.quitToolStripMenuItem.Text = "Exit";
             this.quitToolStripMenuItem.Click += new System.EventHandler(this.quitToolStripMenuItem_Click);
             // 
@@ -469,6 +472,21 @@ namespace QuakeNavEditor
             this.patchToolStripMenuItem.Size = new System.Drawing.Size(49, 20);
             this.patchToolStripMenuItem.Text = "Patch";
             this.patchToolStripMenuItem.Click += new System.EventHandler(this.patchToolStripMenuItem_Click);
+            // 
+            // toolsToolStripMenuItem
+            // 
+            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.removeAllTraversalsToolStripMenuItem});
+            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
+            this.toolsToolStripMenuItem.Text = "Tools";
+            // 
+            // removeAllTraversalsToolStripMenuItem
+            // 
+            this.removeAllTraversalsToolStripMenuItem.Name = "removeAllTraversalsToolStripMenuItem";
+            this.removeAllTraversalsToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.removeAllTraversalsToolStripMenuItem.Text = "Remove all traversals...";
+            this.removeAllTraversalsToolStripMenuItem.Click += new System.EventHandler(this.removeAllTraversalsToolStripMenuItem_Click);
             // 
             // openFileDialog
             // 
@@ -636,5 +654,7 @@ namespace QuakeNavEditor
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton toolStripButtonReload;
         private System.Windows.Forms.ToolStripButton toolStripButtonAutoReload;
+        private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem removeAllTraversalsToolStripMenuItem;
     }
 }
