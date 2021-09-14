@@ -544,5 +544,45 @@ namespace QuakeNavEditor
             PopulateNodes();
             _navPreview.Render();
         }
+
+        private void statisticsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var allLinks = _nav.Nodes.SelectMany(n => n.Links);
+
+            var separator = "-------------";
+            var message = @$"Statistics
+{separator}
+Number of nodes: {_nav.Nodes.Count}
+Number of links: {allLinks.Count()}
+Links length: {allLinks.Where(l => l.Target != null).Sum(l => Vector3.Distance(l.Node.Origin,l.Target.Origin))} map units
+Total node diameter: {_nav.Nodes.Sum(n => n.Radius*2f)} map units
+Nodes extents: [{_nav.Nodes.Min(n => n.Origin.X)} {_nav.Nodes.Min(n => n.Origin.Y)} {_nav.Nodes.Min(n => n.Origin.Z)}] [{_nav.Nodes.Max(n => n.Origin.X)} {_nav.Nodes.Max(n => n.Origin.Y)} {_nav.Nodes.Max(n => n.Origin.Z)}]
+
+Edicts references: {allLinks.Count(l => l.Edict != null)}
+Traversals count: {allLinks.Count(l => l.Traversal != null)}
+{separator}
+Link types:
+
+Walk: {allLinks.Count(l => l.Type == NavigationGraph.LinkType.Walk)}
+Long jump: {allLinks.Count(l => l.Type == NavigationGraph.LinkType.LongJump)}
+Walk off ledge: {allLinks.Count(l => l.Type == NavigationGraph.LinkType.WalkOffLedge)}
+Pusher: {allLinks.Count(l => l.Type == NavigationGraph.LinkType.Pusher)}
+Barrier jump: {allLinks.Count(l => l.Type == NavigationGraph.LinkType.BarrierJump)}
+Elevator: {allLinks.Count(l => l.Type == NavigationGraph.LinkType.Elevator)}
+Train: {allLinks.Count(l => l.Type == NavigationGraph.LinkType.Train)}
+Manual jump: {allLinks.Count(l => l.Type == NavigationGraph.LinkType.ManualJump)}
+{separator}
+Node flags:
+
+Teleporter: {_nav.Nodes.Count(n => n.Flags.HasFlag(NavigationGraph.NodeFlags.Teleporter))}
+Pusher: {_nav.Nodes.Count(n => n.Flags.HasFlag(NavigationGraph.NodeFlags.Pusher))}
+Elevator Top: {_nav.Nodes.Count(n => n.Flags.HasFlag(NavigationGraph.NodeFlags.ElevatorTop))}
+Elevator Bottom: {_nav.Nodes.Count(n => n.Flags.HasFlag(NavigationGraph.NodeFlags.ElevatorBottom))}
+Underwater: {_nav.Nodes.Count(n => n.Flags.HasFlag(NavigationGraph.NodeFlags.Underwater))}
+Hazard: {_nav.Nodes.Count(n => n.Flags.HasFlag(NavigationGraph.NodeFlags.Hazard))}
+";
+
+            new FormStatistics(message).ShowDialog();
+        }
     }
 }
